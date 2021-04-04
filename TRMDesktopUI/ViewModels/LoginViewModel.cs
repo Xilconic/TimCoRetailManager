@@ -1,11 +1,20 @@
-﻿using Caliburn.Micro;
+﻿using System;
+using System.Threading.Tasks;
+using Caliburn.Micro;
+using TRMDesktopUI.Helpers;
 
 namespace TRMDesktopUI.ViewModels
 {
     public class LoginViewModel : Screen
     {
+        private readonly IApiHelper _apiHelper;
         private string _userName;
         private string _password;
+
+        public LoginViewModel(IApiHelper apiHelper)
+        {
+            _apiHelper = apiHelper;
+        }
 
         public string UserName
         {
@@ -18,6 +27,20 @@ namespace TRMDesktopUI.ViewModels
             }
         }
 
+        /// <remarks>
+        /// <para>
+        /// Binding a plain string to a <see cref="System.Windows.Controls.PasswordBox"/>
+        /// introduces a vulnerability of exposing sensitive data (through RAM, or poor
+        /// programming choices later down the line on the usage of this property).
+        /// </para>
+        /// <para>
+        /// In the video https://www.youtube.com/watch?v=3eIc68VWxgE Tim Corey expresses
+        /// that the Caliburn.Micro framework usage patterns requires breaking the security
+        /// open here. Not sure if that's completely true.
+        /// Secondly in that same video he also mentions that the plain text password still
+        /// needs to be sent over HTTPS towards the TimCo Retail Manager Api.
+        /// </para>
+        /// </remarks>
         public string Password
         {
             get => _password;
@@ -33,8 +56,17 @@ namespace TRMDesktopUI.ViewModels
             UserName?.Length > 0 &&
             Password?.Length > 0;
 
-        public void LogIn()
+        public async Task LogIn()
         {
+            try
+            {
+                var result = await _apiHelper.AuthenticateAsync(UserName, Password);
+            }
+            catch (Exception e)
+            {
+                // TODO: Try-eat-all isn't recommended practice, but following along with the course...
+                Console.WriteLine(e);
+            }
         }
     }
 }
