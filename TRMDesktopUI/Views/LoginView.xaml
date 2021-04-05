@@ -18,6 +18,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -28,24 +29,33 @@
             Login Form
         </TextBlock>
 
+        <!-- Error Message row -->
+        <TextBlock x:Name="ErrorMessage" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
+                   Margin="0,0,0,20" MaxWidth="300"
+                   Foreground="Red"
+                   Visibility="{Binding IsErrorVisible, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}"
+                   TextWrapping="Wrap">
+            This is an error message
+        </TextBlock>
+
         <!-- Username row -->
-        <TextBlock Grid.Row="1" Grid.Column="1"
-                   Margin="0,0,0,10">
+        <TextBlock Grid.Row="2" Grid.Column="1"
+                   Margin="0,0,5,10">
             Username:
         </TextBlock>
-        <TextBox x:Name="UserName" Grid.Row="1" Grid.Column="2"
-                 Margin="0,0,0,10"  MinWidth="150"/>
+        <TextBox x:Name="UserName" Grid.Row="2" Grid.Column="2"
+                 Margin="0,0,0,10"  MinWidth="350"/>
 
         <!-- Password row -->
-        <TextBlock Grid.Row="2" Grid.Column="1"
-                   Margin="0,0,0,10">
+        <TextBlock Grid.Row="3" Grid.Column="1"
+                   Margin="0,0,5,10">
             Password:
         </TextBlock>
-        <PasswordBox x:Name="Password" Grid.Row="2" Grid.Column="2"
-                     Margin="0,0,0,20" MinWidth="150"/>
+        <PasswordBox x:Name="Password" Grid.Row="3" Grid.Column="2"
+                     Margin="0,0,0,20" MinWidth="350"/>
 
         <!-- Login row -->
-        <Button x:Name="LogIn" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2"
+        <Button x:Name="LogIn" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2"
                 Padding="20,5"
                 HorizontalAlignment="Center">
             Log In

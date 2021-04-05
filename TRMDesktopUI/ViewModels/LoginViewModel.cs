@@ -10,6 +10,7 @@ namespace TRMDesktopUI.ViewModels
         private readonly IApiHelper _apiHelper;
         private string _userName;
         private string _password;
+        private string _errorMessage;
 
         public LoginViewModel(IApiHelper apiHelper)
         {
@@ -56,16 +57,29 @@ namespace TRMDesktopUI.ViewModels
             UserName?.Length > 0 &&
             Password?.Length > 0;
 
+        public bool IsErrorVisible => ErrorMessage?.Length > 0;
+
+        public string ErrorMessage
+        {
+            get => _errorMessage;
+            set
+            {
+                _errorMessage = value;
+                NotifyOfPropertyChange(nameof(ErrorMessage));
+                NotifyOfPropertyChange(nameof(IsErrorVisible));
+            }
+        }
+
         public async Task LogIn()
         {
             try
             {
+                ErrorMessage = string.Empty;
                 var result = await _apiHelper.AuthenticateAsync(UserName, Password);
             }
             catch (Exception e)
             {
-                // TODO: Try-eat-all isn't recommended practice, but following along with the course...
-                Console.WriteLine(e);
+                ErrorMessage = e.Message;
             }
         }
     }
