@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using TRMDesktopUI.Models;
+using TRMDesktopUI.Library.Models;
 
-namespace TRMDesktopUI.Helpers
+namespace TRMDesktopUI.Library.Api
 {
     public interface IApiHelper
     {
@@ -10,5 +10,8 @@ namespace TRMDesktopUI.Helpers
         /// <exception cref="System.Exception">Thrown when the authentication failed
         /// or the combination of username/password is incorrect.</exception>
         Task<AuthenticatedUser> AuthenticateAsync(string username, string password);
+
+        /// <exception cref="System.Exception">Thrown when request failed.</exception>
+        Task GetLoggedInUserInfoAsync(string token);
     }
 }
