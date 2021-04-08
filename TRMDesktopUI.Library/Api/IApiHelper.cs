@@ -1,10 +1,14 @@
-﻿using System.Threading.Tasks;
+﻿using System.Net.Http;
+using System.Threading.Tasks;
 using TRMDesktopUI.Library.Models;
 
 namespace TRMDesktopUI.Library.Api
 {
     public interface IApiHelper
     {
+        // TODO: This feels like overexposing data that should be encapsulated; Going along with course...
+        HttpClient ApiClient { get; }
+
         // TODO: Should be expected that the authentication fails for incorrect username/password combo
         //       This shouldn't result in an Exception being thrown. Just following along with the course though.
         /// <exception cref="System.Exception">Thrown when the authentication failed

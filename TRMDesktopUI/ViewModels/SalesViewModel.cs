@@ -1,15 +1,37 @@
 ﻿using System.ComponentModel;
+using System.Threading.Tasks;
 using Caliburn.Micro;
+using TRMDesktopUI.Library.Api;
+using TRMDesktopUI.Library.Models;
 
 namespace TRMDesktopUI.ViewModels
 {
     public class SalesViewModel : Screen
     {
-        private BindingList<string> _products;
+        private readonly IProductEndpoint _productEndpoint;
+        private BindingList<ProductModel> _products;
         private BindingList<string> _cart;
         private int _itemQuantity;
 
-        public BindingList<string> Products
+        public SalesViewModel(IProductEndpoint productEndpoint)
+        {
+            _productEndpoint = productEndpoint;
+        }
+
+        protected override async void OnViewLoaded(object view)
+        {
+            // TODO: Concerned about async void, which is typically discouraged as it cannot ever be awaited for. Going along with course...
+            base.OnViewLoaded(view);
+            await LoadProducts();
+        }
+
+        private async Task LoadProducts()
+        {
+            var productList = await _productEndpoint.GetAllAsync();
+            Products = new BindingList<ProductModel>(productList);
+        }
+
+        public BindingList<ProductModel> Products
         {
             get => _products;
             set
