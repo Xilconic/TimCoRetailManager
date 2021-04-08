@@ -1,15 +1,32 @@
 ﻿using Caliburn.Micro;
+using TRMDesktopUI.EventModels;
 
 namespace TRMDesktopUI.ViewModels
 {
-    public class ShellViewModel : Conductor<object>
+    public class ShellViewModel : Conductor<object>, IHandle<LogOnEvent>
     {
-        private LoginViewModel _loginViewModel;
+        private readonly IEventAggregator _events;
+        private readonly SalesViewModel _salesViewModel;
+        private readonly SimpleContainer _container;
 
-        public ShellViewModel(LoginViewModel loginViewModel)
+        public ShellViewModel(
+            IEventAggregator events,
+            SalesViewModel salesViewModel,
+            SimpleContainer container)
         {
-            _loginViewModel = loginViewModel;
-            ActivateItem(_loginViewModel);
+            _events = events;
+            _events.Subscribe(this);
+
+            _container = container;
+
+            _salesViewModel = salesViewModel;
+
+            ActivateItem(_container.GetInstance<LoginViewModel>());
+        }
+
+        public void Handle(LogOnEvent message)
+        {
+            ActivateItem(_salesViewModel);
         }
     }
 }
