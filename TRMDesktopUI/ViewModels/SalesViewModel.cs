@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Caliburn.Micro;
 using TRMDesktopUI.Library.Api;
@@ -10,8 +12,9 @@ namespace TRMDesktopUI.ViewModels
     {
         private readonly IProductEndpoint _productEndpoint;
         private BindingList<ProductModel> _products;
-        private BindingList<string> _cart;
-        private int _itemQuantity;
+        private BindingList<CartItemModel> _cart = new BindingList<CartItemModel>();
+        private int _itemQuantity = 1;
+        private ProductModel _selectedProduct;
 
         public SalesViewModel(IProductEndpoint productEndpoint)
         {
@@ -41,7 +44,18 @@ namespace TRMDesktopUI.ViewModels
             }
         }
 
-        public BindingList<string> Cart
+        public ProductModel SelectedProduct
+        {
+            get => _selectedProduct;
+            set
+            {
+                _selectedProduct = value;
+                NotifyOfPropertyChange(nameof(SelectedProduct));
+                NotifyOfPropertyChange(nameof(CanAddToCart));
+            }
+        }
+
+        public BindingList<CartItemModel> Cart
         {
             get => _cart;
             set
@@ -58,6 +72,7 @@ namespace TRMDesktopUI.ViewModels
             {
                 _itemQuantity = value;
                 NotifyOfPropertyChange(nameof(ItemQuantity));
+                NotifyOfPropertyChange(nameof(CanAddToCart));
             }
         }
 
@@ -65,8 +80,12 @@ namespace TRMDesktopUI.ViewModels
         {
             get
             {
-                // TODO: replace with calculation
-                return $"0.00";
+                decimal subTotal = 0;
+                foreach (var cartItemModel in Cart)
+                {
+                    subTotal += cartItemModel.Product.RetailPrice * cartItemModel.QuantityInCart;
+                }
+                return subTotal.ToString("C");
             }
         }
 
@@ -75,7 +94,7 @@ namespace TRMDesktopUI.ViewModels
             get
             {
                 // TODO: replace with calculation
-                return $"0.00";
+                return "$0.00";
             }
         }
 
@@ -84,7 +103,7 @@ namespace TRMDesktopUI.ViewModels
             get
             {
                 // TODO: replace with calculation
-                return $"0.00";
+                return "$0.00";
             }
         }
 
@@ -92,18 +111,36 @@ namespace TRMDesktopUI.ViewModels
         {
             get
             {
-                bool output = false;
-
                 // Make sure something is selected
                 // Make sure there is an item quantity
-
-                return output;
+                return ItemQuantity > 0 &&
+                    SelectedProduct?.QuantityInStock >= ItemQuantity;
             }
         }
 
         public void AddToCart()
         {
+            CartItemModel existingItem = Cart.FirstOrDefault(x => x.Product == SelectedProduct);
+            if (existingItem != null)
+            {
+                existingItem.QuantityInCart += ItemQuantity;
+                // HACK - There should be a better way of refreshing the cart display (Bas: which is making CartItemModel a ViewModel with notify property changes)
+                Cart.Remove(existingItem);
+                Cart.Add(existingItem);
+            }
+            else
+            {
+                CartItemModel item = new CartItemModel
+                {
+                    Product = SelectedProduct,
+                    QuantityInCart = ItemQuantity
+                };
+                Cart.Add(item);
+            }
 
+            SelectedProduct.QuantityInStock -= ItemQuantity;
+            ItemQuantity = 1;
+            NotifyOfPropertyChange(nameof(SubTotal));
         }
 
         public bool CanRemoveFromCart
@@ -120,7 +157,7 @@ namespace TRMDesktopUI.ViewModels
 
         public void RemoveFromCart()
         {
-
+            NotifyOfPropertyChange(nameof(SubTotal));
         }
 
         public bool CanCheckOut
