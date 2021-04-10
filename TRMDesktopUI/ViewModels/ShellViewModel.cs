@@ -7,21 +7,17 @@ namespace TRMDesktopUI.ViewModels
     {
         private readonly IEventAggregator _events;
         private readonly SalesViewModel _salesViewModel;
-        private readonly SimpleContainer _container;
 
         public ShellViewModel(
             IEventAggregator events,
-            SalesViewModel salesViewModel,
-            SimpleContainer container)
+            SalesViewModel salesViewModel)
         {
             _events = events;
             _events.Subscribe(this);
 
-            _container = container;
-
             _salesViewModel = salesViewModel;
 
-            ActivateItem(_container.GetInstance<LoginViewModel>());
+            ActivateItem(IoC.Get<LoginViewModel>());
         }
 
         public void Handle(LogOnEvent message)
