@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Caliburn.Micro;
 using TRMDesktopUI.Library.Api;
+using TRMDesktopUI.Library.Helpers;
 using TRMDesktopUI.Library.Models;
 
 namespace TRMDesktopUI.ViewModels
@@ -11,14 +12,18 @@ namespace TRMDesktopUI.ViewModels
     public class SalesViewModel : Screen
     {
         private readonly IProductEndpoint _productEndpoint;
+        private readonly IConfigHelper _configHelper;
         private BindingList<ProductModel> _products;
         private BindingList<CartItemModel> _cart = new BindingList<CartItemModel>();
         private int _itemQuantity = 1;
         private ProductModel _selectedProduct;
 
-        public SalesViewModel(IProductEndpoint productEndpoint)
+        public SalesViewModel(
+            IProductEndpoint productEndpoint,
+            IConfigHelper configHelper)
         {
             _productEndpoint = productEndpoint;
+            _configHelper = configHelper;
         }
 
         protected override async void OnViewLoaded(object view)
@@ -76,34 +81,16 @@ namespace TRMDesktopUI.ViewModels
             }
         }
 
-        public string SubTotal
-        {
-            get
-            {
-                decimal subTotal = 0;
-                foreach (var cartItemModel in Cart)
-                {
-                    subTotal += cartItemModel.Product.RetailPrice * cartItemModel.QuantityInCart;
-                }
-                return subTotal.ToString("C");
-            }
-        }
+        public string SubTotal => CalculateSubTotal().ToString("C");
 
-        public string Tax
-        {
-            get
-            {
-                // TODO: replace with calculation
-                return "$0.00";
-            }
-        }
+        public string Tax => CalculateTax().ToString("C");
 
         public string Total
         {
             get
             {
-                // TODO: replace with calculation
-                return "$0.00";
+                decimal total = CalculateSubTotal() + CalculateTax();
+                return total.ToString("C");
             }
         }
 
@@ -141,6 +128,8 @@ namespace TRMDesktopUI.ViewModels
             SelectedProduct.QuantityInStock -= ItemQuantity;
             ItemQuantity = 1;
             NotifyOfPropertyChange(nameof(SubTotal));
+            NotifyOfPropertyChange(nameof(Tax));
+            NotifyOfPropertyChange(nameof(Total));
         }
 
         public bool CanRemoveFromCart
@@ -157,7 +146,10 @@ namespace TRMDesktopUI.ViewModels
 
         public void RemoveFromCart()
         {
+            // TODO: DRY: repeated in AddToCart; But going along with course...
             NotifyOfPropertyChange(nameof(SubTotal));
+            NotifyOfPropertyChange(nameof(Tax));
+            NotifyOfPropertyChange(nameof(Total));
         }
 
         public bool CanCheckOut
@@ -175,6 +167,30 @@ namespace TRMDesktopUI.ViewModels
         public void CheckOut()
         {
 
+        }
+
+        private decimal CalculateSubTotal()
+        {
+            decimal subTotal = 0;
+            foreach (var cartItemModel in Cart)
+            {
+                subTotal += cartItemModel.Product.RetailPrice * cartItemModel.QuantityInCart;
+            }
+
+            return subTotal;
+        }
+
+        private decimal CalculateTax()
+        {
+            decimal taxAmount = 0;
+            decimal taxRate = _configHelper.GetTaxRate() / 100; // TODO: The devision by 100 should happen in ConfigHelper.GetTaxRate, but going along with course...
+            // TODO: DRY, as this copies code from CalculateSubTotal and then modifies that result. But going along with course...
+            foreach (var cartItemModel in Cart)
+            {
+                taxAmount += cartItemModel.Product.RetailPrice * cartItemModel.QuantityInCart * taxRate;
+            }
+
+            return taxAmount;
         }
     }
 }
