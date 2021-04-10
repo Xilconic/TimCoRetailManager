@@ -185,10 +185,9 @@ namespace TRMDesktopUI.ViewModels
             decimal taxAmount = 0;
             decimal taxRate = _configHelper.GetTaxRate() / 100; // TODO: The devision by 100 should happen in ConfigHelper.GetTaxRate, but going along with course...
             // TODO: DRY, as this copies code from CalculateSubTotal and then modifies that result. But going along with course...
-            foreach (var cartItemModel in Cart)
-            {
-                taxAmount += cartItemModel.Product.RetailPrice * cartItemModel.QuantityInCart * taxRate;
-            }
+            taxAmount = Cart
+                .Where(item => item.Product.IsTaxable)
+                .Sum(item => item.Product.RetailPrice * item.QuantityInCart * taxRate);
 
             return taxAmount;
         }
