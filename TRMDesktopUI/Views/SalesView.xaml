@@ -38,7 +38,23 @@
                  SelectedItem="{Binding SelectedProduct}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <TextBlock Text="{Binding ProductName}"/>
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Text="{Binding ProductName}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Price:" FontSize="14"></TextBlock>
+                                <TextBlock Text="{Binding RetailPrice, StringFormat='{}{0:c}'}" FontSize="14"/>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="5,0,0,0">
+                                <TextBlock Text="Qty:" FontSize="14"></TextBlock>
+                                <!-- TODO: QuantityInStock is modified, but no property changed! Going along with course... -->
+                                <TextBlock Text="{Binding QuantityInStock}" FontSize="14"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
