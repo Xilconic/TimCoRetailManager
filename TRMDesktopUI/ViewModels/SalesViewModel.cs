@@ -13,6 +13,7 @@ namespace TRMDesktopUI.ViewModels
     {
         private readonly IProductEndpoint _productEndpoint;
         private readonly IConfigHelper _configHelper;
+        private readonly ISaleEndpoint _saleEndpoint;
         private BindingList<ProductModel> _products;
         private BindingList<CartItemModel> _cart = new BindingList<CartItemModel>();
         private int _itemQuantity = 1;
@@ -20,10 +21,12 @@ namespace TRMDesktopUI.ViewModels
 
         public SalesViewModel(
             IProductEndpoint productEndpoint,
-            IConfigHelper configHelper)
+            IConfigHelper configHelper,
+            ISaleEndpoint saleEndpoint)
         {
             _productEndpoint = productEndpoint;
             _configHelper = configHelper;
+            _saleEndpoint = saleEndpoint;
         }
 
         protected override async void OnViewLoaded(object view)
@@ -130,6 +133,7 @@ namespace TRMDesktopUI.ViewModels
             NotifyOfPropertyChange(nameof(SubTotal));
             NotifyOfPropertyChange(nameof(Tax));
             NotifyOfPropertyChange(nameof(Total));
+            NotifyOfPropertyChange(nameof(CanCheckOut));
         }
 
         public bool CanRemoveFromCart
@@ -150,6 +154,7 @@ namespace TRMDesktopUI.ViewModels
             NotifyOfPropertyChange(nameof(SubTotal));
             NotifyOfPropertyChange(nameof(Tax));
             NotifyOfPropertyChange(nameof(Total));
+            NotifyOfPropertyChange(nameof(CanCheckOut));
         }
 
         public bool CanCheckOut
@@ -159,14 +164,29 @@ namespace TRMDesktopUI.ViewModels
                 bool output = false;
 
                 // Make sure something is the cart
+                if (Cart.Count > 0)
+                {
+                    output = true;
+                }
 
                 return output;
             }
         }
 
-        public void CheckOut()
+        public async Task CheckOut()
         {
+            // Create a SaleModel and post to the API
+            var sale = new SaleModel();
+            foreach (var item in Cart)
+            {
+                sale.SaleDetails.Add(new SaleDetailModel
+                {
+                    ProductId = item.Product.Id,
+                    Quantity = item.QuantityInCart,
+                });
+            }
 
+            await _saleEndpoint.PostSaleAsync(sale);
         }
 
         private decimal CalculateSubTotal()
@@ -183,7 +203,7 @@ namespace TRMDesktopUI.ViewModels
         private decimal CalculateTax()
         {
             decimal taxAmount = 0;
-            decimal taxRate = _configHelper.GetTaxRate() / 100; // TODO: The devision by 100 should happen in ConfigHelper.GetTaxRate, but going along with course...
+            decimal taxRate = _configHelper.GetTaxRate() / 100; // TODO: The division by 100 should happen in ConfigHelper.GetTaxRate, but going along with course...
             // TODO: DRY, as this copies code from CalculateSubTotal and then modifies that result. But going along with course...
             taxAmount = Cart
                 .Where(item => item.Product.IsTaxable)
