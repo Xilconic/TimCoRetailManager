@@ -1,11 +1,13 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Caliburn.Micro;
 using TRMDesktopUI.Library.Api;
 using TRMDesktopUI.Library.Helpers;
 using TRMDesktopUI.Library.Models;
+using TRMDesktopUI.Models;
 
 namespace TRMDesktopUI.ViewModels
 {
@@ -14,19 +16,23 @@ namespace TRMDesktopUI.ViewModels
         private readonly IProductEndpoint _productEndpoint;
         private readonly IConfigHelper _configHelper;
         private readonly ISaleEndpoint _saleEndpoint;
-        private BindingList<ProductModel> _products;
-        private BindingList<CartItemModel> _cart = new BindingList<CartItemModel>();
+        private readonly IMapper _mapper;
+
+        private BindingList<ProductDisplayModel> _products;
+        private BindingList<CartItemDisplayModel> _cart = new BindingList<CartItemDisplayModel>();
         private int _itemQuantity = 1;
-        private ProductModel _selectedProduct;
+        private ProductDisplayModel _selectedProduct;
 
         public SalesViewModel(
             IProductEndpoint productEndpoint,
             IConfigHelper configHelper,
-            ISaleEndpoint saleEndpoint)
+            ISaleEndpoint saleEndpoint,
+            IMapper mapper)
         {
             _productEndpoint = productEndpoint;
             _configHelper = configHelper;
             _saleEndpoint = saleEndpoint;
+            _mapper = mapper;
         }
 
         protected override async void OnViewLoaded(object view)
@@ -39,10 +45,11 @@ namespace TRMDesktopUI.ViewModels
         private async Task LoadProducts()
         {
             var productList = await _productEndpoint.GetAllAsync();
-            Products = new BindingList<ProductModel>(productList);
+            var products = _mapper.Map<List<ProductDisplayModel>>(productList);
+            Products = new BindingList<ProductDisplayModel>(products);
         }
 
-        public BindingList<ProductModel> Products
+        public BindingList<ProductDisplayModel> Products
         {
             get => _products;
             set
@@ -52,7 +59,7 @@ namespace TRMDesktopUI.ViewModels
             }
         }
 
-        public ProductModel SelectedProduct
+        public ProductDisplayModel SelectedProduct
         {
             get => _selectedProduct;
             set
@@ -63,7 +70,7 @@ namespace TRMDesktopUI.ViewModels
             }
         }
 
-        public BindingList<CartItemModel> Cart
+        public BindingList<CartItemDisplayModel> Cart
         {
             get => _cart;
             set
@@ -110,17 +117,14 @@ namespace TRMDesktopUI.ViewModels
 
         public void AddToCart()
         {
-            CartItemModel existingItem = Cart.FirstOrDefault(x => x.Product == SelectedProduct);
+            CartItemDisplayModel existingItem = Cart.FirstOrDefault(x => x.Product == SelectedProduct);
             if (existingItem != null)
             {
                 existingItem.QuantityInCart += ItemQuantity;
-                // HACK - There should be a better way of refreshing the cart display (Bas: which is making CartItemModel a ViewModel with notify property changes)
-                Cart.Remove(existingItem);
-                Cart.Add(existingItem);
             }
             else
             {
-                CartItemModel item = new CartItemModel
+                CartItemDisplayModel item = new CartItemDisplayModel
                 {
                     Product = SelectedProduct,
                     QuantityInCart = ItemQuantity
@@ -192,9 +196,9 @@ namespace TRMDesktopUI.ViewModels
         private decimal CalculateSubTotal()
         {
             decimal subTotal = 0;
-            foreach (var cartItemModel in Cart)
+            foreach (var CartItemDisplayModel in Cart)
             {
-                subTotal += cartItemModel.Product.RetailPrice * cartItemModel.QuantityInCart;
+                subTotal += CartItemDisplayModel.Product.RetailPrice * CartItemDisplayModel.QuantityInCart;
             }
 
             return subTotal;

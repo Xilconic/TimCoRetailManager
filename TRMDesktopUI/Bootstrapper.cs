@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using AutoMapper;
 using Caliburn.Micro;
 using TRMDesktopUI.Helpers;
 using TRMDesktopUI.Library.Api;
 using TRMDesktopUI.Library.Helpers;
 using TRMDesktopUI.Library.Models;
+using TRMDesktopUI.Models;
 using TRMDesktopUI.ViewModels;
 
 namespace TRMDesktopUI
@@ -34,6 +35,8 @@ namespace TRMDesktopUI
 
         protected override void Configure()
         {
+            _container.Instance(ConfigureAutoMapper());
+
             _container
                 .Instance(_container)
                 .PerRequest<IProductEndpoint, ProductEndpoint>()
@@ -52,6 +55,17 @@ namespace TRMDesktopUI
                 .ToList()
                 .ForEach(viewModelType => _container.RegisterPerRequest(
                     viewModelType, viewModelType.ToString(), viewModelType));
+        }
+
+        private static IMapper ConfigureAutoMapper()
+        {
+            var config = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<ProductModel, ProductDisplayModel>();
+                cfg.CreateMap<CartItemModel, CartItemDisplayModel>();
+            });
+            IMapper mapper = config.CreateMapper();
+            return mapper;
         }
 
         protected override object GetInstance(Type service, string key)
