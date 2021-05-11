@@ -22,6 +22,7 @@ namespace TRMDesktopUI.ViewModels
         private BindingList<CartItemDisplayModel> _cart = new BindingList<CartItemDisplayModel>();
         private int _itemQuantity = 1;
         private ProductDisplayModel _selectedProduct;
+        private CartItemDisplayModel _selectedCartItem;
 
         public SalesViewModel(
             IProductEndpoint productEndpoint,
@@ -67,6 +68,17 @@ namespace TRMDesktopUI.ViewModels
                 _selectedProduct = value;
                 NotifyOfPropertyChange(nameof(SelectedProduct));
                 NotifyOfPropertyChange(nameof(CanAddToCart));
+            }
+        }
+
+        public CartItemDisplayModel SelectedCartItem
+        {
+            get => _selectedCartItem;
+            set
+            {
+                _selectedCartItem = value;
+                NotifyOfPropertyChange(nameof(SelectedCartItem));
+                NotifyOfPropertyChange(nameof(CanRemoveFromCart));
             }
         }
 
@@ -147,6 +159,8 @@ namespace TRMDesktopUI.ViewModels
                 bool output = false;
 
                 // Make sure something is selected
+                output = SelectedCartItem != null &&
+                         SelectedCartItem?.Product.QuantityInStock > 0;
 
                 return output;
             }
@@ -154,6 +168,16 @@ namespace TRMDesktopUI.ViewModels
 
         public void RemoveFromCart()
         {
+            SelectedCartItem.Product.QuantityInStock += 1;
+            if (SelectedCartItem.QuantityInCart > 1)
+            {
+                SelectedCartItem.QuantityInCart -= 1;
+            }
+            else
+            {
+                Cart.Remove(SelectedCartItem);
+            }
+
             // TODO: DRY: repeated in AddToCart; But going along with course...
             NotifyOfPropertyChange(nameof(SubTotal));
             NotifyOfPropertyChange(nameof(Tax));
