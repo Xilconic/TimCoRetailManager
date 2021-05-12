@@ -63,6 +63,8 @@ namespace TRMDataManager.Library.Internal.DataAccess
             _connection.Open();
 
             _transaction = _connection.BeginTransaction();
+
+            isClosed = false;
         }
 
         public void SaveDataInTransaction<TParameters>(
@@ -92,16 +94,22 @@ namespace TRMDataManager.Library.Internal.DataAccess
             return rows;
         }
 
+        private bool isClosed = false;
+
         public void CommitTransaction()
         {
             _transaction?.Commit();
             _connection?.Close();
+
+            isClosed = true;
         }
 
         public void RollbackTransaction()
         {
             _transaction?.Rollback();
             _connection?.Close(); // TODO: DRY, repeated in CommitTransaction; Going along with course
+
+            isClosed = true;
         }
 
         // Open connect/start transaction method
@@ -112,8 +120,21 @@ namespace TRMDataManager.Library.Internal.DataAccess
 
         public void Dispose()
         {
-            // TODO: This doesn't implement Microsoft recommend Dispose pattern; Going along with course...
-            CommitTransaction();
+            if (!isClosed)
+            {
+                try
+                {
+                    // TODO: This doesn't implement Microsoft recommend Dispose pattern; Going along with course...
+                    CommitTransaction();
+                }
+                catch
+                {
+                    // Log this issue
+                }
+            }
+
+            _transaction = null;
+            _connection = null;
         }
     }
 }
