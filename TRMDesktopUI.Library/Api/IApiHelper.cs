@@ -9,6 +9,8 @@ namespace TRMDesktopUI.Library.Api
         // TODO: This feels like overexposing data that should be encapsulated; Going along with course...
         HttpClient ApiClient { get; }
 
+        void LogOffUser();
+
         // TODO: Should be expected that the authentication fails for incorrect username/password combo
         //       This shouldn't result in an Exception being thrown. Just following along with the course though.
         /// <exception cref="System.Exception">Thrown when the authentication failed
