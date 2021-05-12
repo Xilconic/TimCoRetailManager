@@ -10,5 +10,15 @@ namespace TRMDesktopUI.Library.Models
         public string LastName { get; set; }
         public string EmailAddress { get; set; }
         public DateTime CreatedDate { get; set; }
+
+        public void LogOffUser()
+        {
+            Token = string.Empty;
+            AuthUserId = string.Empty;
+            FirstName = string.Empty;
+            LastName = string.Empty;
+            EmailAddress = String.Empty;
+            CreatedDate = DateTime.MinValue;
+        }
     }
 }

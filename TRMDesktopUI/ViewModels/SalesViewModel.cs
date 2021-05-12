@@ -40,7 +40,7 @@ namespace TRMDesktopUI.ViewModels
         {
             // TODO: Concerned about async void, which is typically discouraged as it cannot ever be awaited for. Going along with course...
             base.OnViewLoaded(view);
-            await LoadProducts();
+            await ResetSalesViewModelAsync();
         }
 
         private async Task LoadProducts()
@@ -69,6 +69,18 @@ namespace TRMDesktopUI.ViewModels
                 NotifyOfPropertyChange(nameof(SelectedProduct));
                 NotifyOfPropertyChange(nameof(CanAddToCart));
             }
+        }
+
+        private async Task ResetSalesViewModelAsync()
+        {
+            Cart = new BindingList<CartItemDisplayModel>();
+            await LoadProducts();
+
+            // TODO: The below is copied from AddToCart; Going along with course
+            NotifyOfPropertyChange(nameof(SubTotal));
+            NotifyOfPropertyChange(nameof(Tax));
+            NotifyOfPropertyChange(nameof(Total));
+            NotifyOfPropertyChange(nameof(CanCheckOut));
         }
 
         public CartItemDisplayModel SelectedCartItem
@@ -160,7 +172,7 @@ namespace TRMDesktopUI.ViewModels
 
                 // Make sure something is selected
                 output = SelectedCartItem != null &&
-                         SelectedCartItem?.Product.QuantityInStock > 0;
+                         SelectedCartItem?.QuantityInCart > 0; // TODO: Bug: AddToCart method changes QuantityInCart property, therefore should fire NotifyPropertyChange; Going along with course...
 
                 return output;
             }
@@ -178,6 +190,7 @@ namespace TRMDesktopUI.ViewModels
                 Cart.Remove(SelectedCartItem);
             }
 
+            NotifyOfPropertyChange(nameof(CanAddToCart));
             // TODO: DRY: repeated in AddToCart; But going along with course...
             NotifyOfPropertyChange(nameof(SubTotal));
             NotifyOfPropertyChange(nameof(Tax));
@@ -215,6 +228,8 @@ namespace TRMDesktopUI.ViewModels
             }
 
             await _saleEndpoint.PostSaleAsync(sale);
+
+            await ResetSalesViewModelAsync();
         }
 
         private decimal CalculateSubTotal()
