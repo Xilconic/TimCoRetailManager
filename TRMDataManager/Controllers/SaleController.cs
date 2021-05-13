@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
+﻿using System.Collections.Generic;
 using System.Web.Http;
 using Microsoft.AspNet.Identity;
 using TRMDataManager.Library.DataAccess;
 using TRMDataManager.Library.Models;
-using TRMDataManager.Models;
 
 namespace TRMDataManager.Controllers
 {
@@ -19,6 +14,15 @@ namespace TRMDataManager.Controllers
             var data = new SaleData();
             string userId = RequestContext.Principal.Identity.GetUserId();
             data.SaveSale(sale, userId);
+        }
+
+        [Route("GetSalesReport")]
+        public List<SaleReportModel> GetSalesReport()
+        {
+            // TODO: Fails C# recommended practice, should return interface; Going along with course...
+            // TODO: This has direct coupling between API callers and database schema, would rather isolate this; Going along with course...
+            var data = new SaleData();
+            return data.GetSaleReport();
         }
     }
 }
