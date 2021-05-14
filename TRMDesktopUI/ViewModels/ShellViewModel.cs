@@ -48,6 +48,11 @@ namespace TRMDesktopUI.ViewModels
             TryClose();
         }
 
+        public void UserManagement()
+        {
+            ActivateItem(IoC.Get<UserDisplayViewModel>());//TODO: DRY - code pattern copied from LogOut; Going along with course...
+        }
+
         public void LogOut()
         {
             _user.ResetUserModel();

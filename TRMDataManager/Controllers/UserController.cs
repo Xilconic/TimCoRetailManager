@@ -2,8 +2,10 @@
 using System.Linq;
 using System.Web.Http;
 using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
 using TRMDataManager.Library.DataAccess;
 using TRMDataManager.Library.Models;
+using TRMDataManager.Models;
 
 namespace TRMDataManager.Controllers
 {
@@ -21,6 +23,41 @@ namespace TRMDataManager.Controllers
             //       I'd rather introduce an adapter/DTO object to isolate that dependency.
             //       But I'll just go along with the course...
             return data.GetUserById(userId).First(); // TODO: Returning a single user, should be responsibility of the `GetUserById` method called. Going along with course...
+        }
+
+        [Authorize(Roles="Admin")]
+        [HttpGet]
+        [Route("Admin/GetAllUsers")]
+        public List<ApplicationUserModel> GetAllUsers()
+        {
+            var output = new List<ApplicationUserModel>();
+
+            using (var context = new ApplicationDbContext())
+            {
+                var userStore = new UserStore<ApplicationUser>(context);
+                var userManager = new UserManager<ApplicationUser>(userStore);
+
+                var users = userManager.Users.ToList();
+                var roles = context.Roles.ToList();
+
+                foreach (var user in users)
+                {
+                    var u = new ApplicationUserModel
+                    {
+                        Id = user.Id,
+                        Email = user.Email,
+                    };
+
+                    foreach (var r in user.Roles)
+                    {
+                        u.Roles.Add(r.RoleId, roles.Where(x => x.Id == r.RoleId).First().Name);
+                    }
+
+                    output.Add(u);
+                }
+            }
+
+            return output;
         }
     }
 }
