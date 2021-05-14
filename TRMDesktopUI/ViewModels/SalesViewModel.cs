@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Dynamic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using AutoMapper;
 using Caliburn.Micro;
 using TRMDesktopUI.Library.Api;
@@ -17,6 +20,8 @@ namespace TRMDesktopUI.ViewModels
         private readonly IConfigHelper _configHelper;
         private readonly ISaleEndpoint _saleEndpoint;
         private readonly IMapper _mapper;
+        private readonly StatusInfoViewModel _status;
+        private readonly IWindowManager _window;
 
         private BindingList<ProductDisplayModel> _products;
         private BindingList<CartItemDisplayModel> _cart = new BindingList<CartItemDisplayModel>();
@@ -28,19 +33,46 @@ namespace TRMDesktopUI.ViewModels
             IProductEndpoint productEndpoint,
             IConfigHelper configHelper,
             ISaleEndpoint saleEndpoint,
-            IMapper mapper)
+            IMapper mapper,
+            StatusInfoViewModel status,
+            IWindowManager window)
         {
             _productEndpoint = productEndpoint;
             _configHelper = configHelper;
             _saleEndpoint = saleEndpoint;
             _mapper = mapper;
+            _status = status;
+            _window = window;
         }
 
         protected override async void OnViewLoaded(object view)
         {
             // TODO: Concerned about async void, which is typically discouraged as it cannot ever be awaited for. Going along with course...
             base.OnViewLoaded(view);
-            await ResetSalesViewModelAsync();
+            try
+            {
+                await ResetSalesViewModelAsync();
+            }
+            catch (Exception ex)
+            {
+                dynamic settings = new ExpandoObject(); // TODO: _window.ShowDialog prototype indicated dictionary to be used; Going along with course...
+                settings.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+                settings.ResizeMode = ResizeMode.NoResize;
+                settings.Title = "System Error";
+
+                if (ex.Message == "Unauthorized") // TODO: Not a fan of the straight message compare, as it's likely going to break for different culture; Going along with course...
+                {
+                    _status.UpdateMessage("Unauthorized Access", "You do not have permission to interact with the Sales form.");
+                    _window.ShowDialog(_status, null, settings);
+                }
+                else
+                {
+                    _status.UpdateMessage("Fatal Exception", ex.Message);
+                    _window.ShowDialog(_status, null, settings);
+                }
+
+                TryClose();
+            }
         }
 
         private async Task LoadProducts()
