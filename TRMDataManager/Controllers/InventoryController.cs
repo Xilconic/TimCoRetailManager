@@ -8,6 +8,7 @@ namespace TRMDataManager.Controllers
     [Authorize]
     public class InventoryController : ApiController
     {
+        [Authorize(Roles = "Admin,Manager")]
         public List<InventoryModel> Get()
         {
             // TODO: Fails C# recommended practice, should return interface; Going along with course...
@@ -16,6 +17,7 @@ namespace TRMDataManager.Controllers
             return data.GetInventory();
         }
 
+        [Authorize(Roles = "Admin")]
         public void Post(InventoryModel item)
         {
             var data = new InventoryData();
