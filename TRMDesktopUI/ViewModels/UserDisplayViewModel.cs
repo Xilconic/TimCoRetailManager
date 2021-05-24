@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Dynamic;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using Caliburn.Micro;
 using TRMDesktopUI.Library.Api;
 using TRMDesktopUI.Library.Models;
-using TRMDesktopUI.Models;
 
 namespace TRMDesktopUI.ViewModels
 {
@@ -17,6 +16,12 @@ namespace TRMDesktopUI.ViewModels
         private readonly IWindowManager _window;
         private readonly IUserEndpoint _userEndpoint;
         private BindingList<UserModel> _users;
+        private UserModel _selectedUser;
+        private string _selectedUserName;
+        private BindingList<string> _userRoles = new BindingList<string>();
+        private BindingList<string> _availableRoles = new BindingList<string>();
+        private string _selectedRoleToRemove;
+        private string _selectedRoleToAdd;
 
         public BindingList<UserModel> Users
         {
@@ -28,6 +33,88 @@ namespace TRMDesktopUI.ViewModels
             {
                 _users = value;
                 NotifyOfPropertyChange(nameof(Users));
+            }
+        }
+
+        public UserModel SelectedUser
+        {
+            get
+            {
+                return _selectedUser;
+            }
+            set
+            {
+                _selectedUser = value;
+                SelectedUserName = value.Email;
+                UserRoles.Clear();
+                UserRoles = new BindingList<string>(value.Roles.Select(x => x.Value).ToList());
+                LoadRoles(); // TODO: Getting the full data should be done once, in OnViewLoaded? Going along with course...
+                NotifyOfPropertyChange(nameof(SelectedUser));
+            }
+        }
+
+        public BindingList<string> UserRoles
+        {
+            get
+            {
+                return _userRoles;
+            }
+            set
+            {
+                _userRoles = value;
+                NotifyOfPropertyChange(nameof(UserRoles));
+            }
+        }
+
+        public string SelectedUserName
+        {
+            get
+            {
+                return _selectedUserName;
+            }
+            set
+            {
+                _selectedUserName = value;
+                NotifyOfPropertyChange(nameof(SelectedUserName));
+            }
+        }
+
+        public BindingList<string> AvailableRoles
+        {
+            get
+            {
+                return _availableRoles;
+            }
+            set
+            {
+                _availableRoles = value;
+                NotifyOfPropertyChange(nameof(AvailableRoles));
+            }
+        }
+
+        public string SelectedUserRoles
+        {
+            get
+            {
+                return _selectedRoleToRemove;
+            }
+            set
+            {
+                _selectedRoleToRemove = value;
+                NotifyOfPropertyChange(nameof(SelectedUserRoles));
+            }
+        }
+
+        public string SelectedAvailableRole
+        {
+            get
+            {
+                return _selectedRoleToAdd;
+            }
+            set
+            {
+                _selectedRoleToAdd = value;
+                NotifyOfPropertyChange(nameof(SelectedAvailableRole));
             }
         }
 
@@ -76,6 +163,36 @@ namespace TRMDesktopUI.ViewModels
         {
             var userList = await _userEndpoint.GetAllAsync();
             Users = new BindingList<UserModel>(userList);
+        }
+
+        private async Task LoadRoles()
+        {
+            var roles = await _userEndpoint.GetAllRolesAsync();
+            foreach (var role in roles)
+            {
+                if (UserRoles.IndexOf(role.Value) < 0)
+                {
+                    AvailableRoles.Add(role.Value);
+                }
+            }
+        }
+
+        public async Task AddSelectedRole()
+        {
+            // TODO: Add error handling for endpoint call; Going along with course...
+            await _userEndpoint.AddUserToRoleAsync(SelectedUser.Id, SelectedAvailableRole);
+
+            UserRoles.Add(SelectedAvailableRole);
+            AvailableRoles.Remove(SelectedAvailableRole);
+        }
+
+        public async Task RemoveSelectedRole()
+        {
+            // TODO: Add error handling for endpoint call; Going along with course...
+            await _userEndpoint.RemoveUserFromRoleAsync(SelectedUser.Id, SelectedUserRoles);
+
+            UserRoles.Remove(SelectedUserRoles);
+            AvailableRoles.Add(SelectedUserRoles);
         }
     }
 }
