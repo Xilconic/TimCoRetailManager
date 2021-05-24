@@ -13,6 +13,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TRMDataManager.Library", "T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TRMDesktopUI.Library", "TRMDesktopUI.Library\TRMDesktopUI.Library.csproj", "{7086F271-7428-41D9-9EAE-A9D73926D7C5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "API", "API", "{DE566A3B-87F1-494C-833B-CF5F454E79FD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Database", "Database", "{08BE2250-0F7F-4C11-A76E-410CCA9EF89B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NewFolder1", "NewFolder1", "{0FA995CE-CB59-4E56-A5E2-009A1BB89568}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +50,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8989F35B-D437-45A8-89C7-C8E4B32A6B38} = {DE566A3B-87F1-494C-833B-CF5F454E79FD}
+		{677CF91D-01D9-4897-89D0-30C948B87397} = {08BE2250-0F7F-4C11-A76E-410CCA9EF89B}
+		{7971D538-E5DB-4B18-950C-E26E796CA9D3} = {DE566A3B-87F1-494C-833B-CF5F454E79FD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B59A3C3C-0EE7-4F78-B56F-1CA5C4E985FA}
